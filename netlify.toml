@@ -1,7 +1,7 @@
 [build]
   base    = "rollcall"
   command = "npm install && npx prisma generate && npm run build"
-  publish = ".next"
+  publish = "rollcall/.next"
 
 [build.environment]
   NODE_VERSION = "20"
