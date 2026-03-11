@@ -1,10 +1,7 @@
 [build]
   base    = "rollcall"
   command = "npm install && npx prisma generate && npm run build"
-  publish = "rollcall/.next"
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
