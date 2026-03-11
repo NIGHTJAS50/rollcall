@@ -4,8 +4,8 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: cd rollcall && npm install && npx prisma generate && npm run build
-    startCommand: cd rollcall && npx prisma migrate deploy && npm start
+    buildCommand: cd rollcall && npm install && npx prisma generate && npm run build && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static
+    startCommand: cd rollcall && npx prisma migrate deploy && node .next/standalone/server.js
     envVars:
       - key: DATABASE_URL
         fromDatabase:
