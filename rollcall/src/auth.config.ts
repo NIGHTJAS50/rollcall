@@ -1,5 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
-import { Role } from "@prisma/client";
+import type { Role } from "@prisma/client";
 
 // Edge-safe auth config — no Prisma/bcrypt imports
 export const authConfig: NextAuthConfig = {
