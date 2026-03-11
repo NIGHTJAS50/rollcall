@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  LECTURER
+  ADMIN
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  studentId String?  @unique
+  createdAt DateTime @default(now())
+
+  // Relations
+  courses           Course[]           @relation("LecturerCourses")
+  enrollments       Enrollment[]
+  attendanceRecords AttendanceRecord[]
+}
+
+model Course {
+  id         String   @id @default(uuid())
+  name       String
+  code       String   @unique
+  department String
+  lecturerId String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  lecturer    User                @relation("LecturerCourses", fields: [lecturerId], references: [id])
+  enrollments Enrollment[]
+  sessions    AttendanceSession[]
+}
+
+model Enrollment {
+  id         String   @id @default(uuid())
+  studentId  String
+  courseId   String
+  enrolledAt DateTime @default(now())
+
+  // Relations
+  student User   @relation(fields: [studentId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id])
+
+  @@unique([studentId, courseId])
+}
+
+model AttendanceSession {
+  id        String    @id @default(uuid())
+  courseId  String
+  date      DateTime  @default(now())
+  openedAt  DateTime  @default(now())
+  closedAt  DateTime?
+  qrToken   String    @unique @default(uuid())
+  isActive  Boolean   @default(true)
+
+  // Relations
+  course  Course             @relation(fields: [courseId], references: [id])
+  records AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id        String           @id @default(uuid())
+  studentId String
+  sessionId String
+  markedAt  DateTime         @default(now())
+  status    AttendanceStatus @default(PRESENT)
+
+  // Relations
+  student User              @relation(fields: [studentId], references: [id])
+  session AttendanceSession @relation(fields: [sessionId], references: [id])
+
+  @@unique([studentId, sessionId])
+}
