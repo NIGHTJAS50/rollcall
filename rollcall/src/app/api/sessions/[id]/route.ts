@@ -14,9 +14,9 @@ export async function GET(
   const attendanceSession = await prisma.attendanceSession.findUnique({
     where: { id },
     include: {
-      course: { select: { name: true, code: true } },
+      course: { select: { id: true, name: true, code: true } },
       records: {
-        include: { student: { select: { name: true, studentId: true } } },
+        include: { student: { select: { id: true, name: true, studentId: true } } },
         orderBy: { markedAt: "asc" },
       },
       _count: { select: { records: true } },

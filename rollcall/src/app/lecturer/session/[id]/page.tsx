@@ -8,7 +8,13 @@ import QRCode from "qrcode";
 interface AttendanceRecord {
   id: string;
   markedAt: string;
-  student: { name: string; studentId: string | null };
+  student: { id: string; name: string; studentId: string | null };
+}
+
+interface EnrolledStudent {
+  id: string;
+  name: string;
+  studentId: string | null;
 }
 
 interface SessionData {
@@ -18,7 +24,7 @@ interface SessionData {
   date: string;
   openedAt: string;
   closedAt: string | null;
-  course: { name: string; code: string };
+  course: { id: string; name: string; code: string };
   records: AttendanceRecord[];
   _count: { records: number };
 }
@@ -33,6 +39,12 @@ export default function LecturerSessionPage() {
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [closing, setClosing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [enrolledStudents, setEnrolledStudents] = useState<EnrolledStudent[]>([]);
+  const [kioskInput, setKioskInput] = useState("");
+  const [kioskLoading, setKioskLoading] = useState(false);
+  const [kioskMsg, setKioskMsg] = useState("");
+  const [overrideLoading, setOverrideLoading] = useState<string | null>(null);
+  const [overrideMsg, setOverrideMsg] = useState<{ id: string; text: string; ok: boolean } | null>(null);
   const [countdown, setCountdown] = useState(QR_ROTATE_SECONDS);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -117,6 +129,20 @@ export default function LecturerSessionPage() {
     return () => clearInterval(poll);
   }, [fetchSession]);
 
+  // Load enrolled students once course ID is known
+  useEffect(() => {
+    if (!session?.course?.id) return;
+    fetch(`/api/courses/${session.course.id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.enrollments) {
+          setEnrolledStudents(
+            data.enrollments.map((e: { student: EnrolledStudent }) => e.student)
+          );
+        }
+      });
+  }, [session?.course?.id]);
+
   // Countdown timer + auto-rotate
   useEffect(() => {
     if (!session?.isActive) return;
@@ -139,6 +165,43 @@ export default function LecturerSessionPage() {
   }, [session?.isActive, refreshQR]);
 
   const countdownPct = (countdown / QR_ROTATE_SECONDS) * 100;
+
+  async function kioskCheckin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!kioskInput.trim() || !session) return;
+    setKioskLoading(true);
+    setKioskMsg("");
+    const res = await fetch("/api/attendance/manual", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: session.id, registrationNumber: kioskInput.trim() }),
+    });
+    const data = await res.json();
+    setKioskMsg(res.ok ? data.message : data.error);
+    setKioskLoading(false);
+    if (res.ok) {
+      setKioskInput("");
+      fetchSession(true);
+    }
+  }
+
+  async function overrideStudent(studentUserId: string) {
+    if (!session) return;
+    setOverrideLoading(studentUserId);
+    setOverrideMsg(null);
+    const res = await fetch("/api/attendance/manual", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: session.id, studentUserId }),
+    });
+    const data = await res.json();
+    setOverrideMsg({ id: studentUserId, text: res.ok ? data.message : data.error, ok: res.ok });
+    setOverrideLoading(null);
+    if (res.ok) fetchSession(true);
+  }
+
+  // Build a set of student user IDs (UUIDs) that are already marked present
+  const presentStudentIds = new Set(session?.records.map((r) => r.student.id) ?? []);
 
   return (
     <DashboardLayout>
@@ -180,7 +243,7 @@ export default function LecturerSessionPage() {
               </span>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
               {/* QR Panel */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col items-center">
                 <div className="flex items-center justify-between w-full mb-5">
@@ -290,6 +353,91 @@ export default function LecturerSessionPage() {
                 )}
               </div>
             </div>
+
+            {/* Fallback attendance panels — only shown while session is active */}
+            {session.isActive && (
+              <div className="grid md:grid-cols-2 gap-6">
+
+                {/* Panel A: Manual Check-In (Kiosk) */}
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                  <h2 className="font-semibold text-slate-800 mb-1">Manual Check-In</h2>
+                  <p className="text-xs text-slate-400 mb-4">
+                    Enter a student&apos;s registration number to mark them present.
+                  </p>
+                  <form onSubmit={kioskCheckin} className="flex gap-3">
+                    <input
+                      type="text"
+                      value={kioskInput}
+                      onChange={(e) => setKioskInput(e.target.value)}
+                      placeholder="e.g. STU2024001"
+                      className="flex-1 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={kioskLoading || !kioskInput.trim()}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-50"
+                    >
+                      {kioskLoading ? "Marking..." : "Mark Present"}
+                    </button>
+                  </form>
+                  {kioskMsg && (
+                    <p
+                      className={`mt-3 text-sm font-medium px-4 py-2.5 rounded-xl ${
+                        kioskMsg.toLowerCase().includes("marked")
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-red-50 text-red-600 border border-red-200"
+                      }`}
+                    >
+                      {kioskMsg}
+                    </p>
+                  )}
+                </div>
+
+                {/* Panel B: Enrolled Students Override */}
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-semibold text-slate-800">Enrolled Students</h2>
+                    <span className="text-sm text-slate-400">{enrolledStudents.length} enrolled</span>
+                  </div>
+                  {enrolledStudents.length === 0 ? (
+                    <p className="text-sm text-slate-400 text-center py-6">No enrolled students found.</p>
+                  ) : (
+                    <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+                      {enrolledStudents.map((student) => {
+                        const isPresent = presentStudentIds.has(student.id);
+                        const isLoading = overrideLoading === student.id;
+                        const msg = overrideMsg?.id === student.id ? overrideMsg : null;
+                        return (
+                          <div key={student.id} className="py-3 flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-slate-700 truncate">{student.name}</p>
+                              <p className="text-xs text-slate-400">{student.studentId ?? "—"}</p>
+                              {msg && !msg.ok && (
+                                <p className="text-xs text-red-500 mt-0.5">{msg.text}</p>
+                              )}
+                            </div>
+                            {isPresent ? (
+                              <span className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700">
+                                ✓ Present
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => overrideStudent(student.id)}
+                                disabled={isLoading}
+                                className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 text-slate-500 transition disabled:opacity-50"
+                              >
+                                {isLoading ? "..." : "Mark Present"}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            )}
           </>
         )}
       </div>

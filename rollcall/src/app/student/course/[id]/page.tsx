@@ -40,6 +40,7 @@ export default function StudentCoursePage() {
   const [message, setMessage] = useState("");
   const [qrInput, setQrInput] = useState("");
   const [showScanner, setShowScanner] = useState(false);
+  const [selfCheckin, setSelfCheckin] = useState(false);
   const [activeSession, setActiveSession] = useState<{ id: string; qrToken: string } | null>(null);
 
   function loadData() {
@@ -56,6 +57,21 @@ export default function StudentCoursePage() {
   useEffect(() => {
     loadData();
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function markAttendanceSelf() {
+    if (!activeSession) return;
+    setSelfCheckin(true);
+    setMessage("");
+    const res = await fetch("/api/attendance/self-checkin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: activeSession.id }),
+    });
+    const result = await res.json();
+    setMessage(res.ok ? "Attendance marked successfully!" : result.error);
+    setSelfCheckin(false);
+    if (res.ok) loadData();
+  }
 
   async function markAttendance(token?: string) {
     const t = token ?? qrInput;
@@ -152,8 +168,24 @@ export default function StudentCoursePage() {
                   </h2>
                 </div>
                 <p className="text-sm text-slate-600 mb-4">
-                  A session is currently open. Scan the QR code with your camera, or paste the token below.
+                  A session is currently open. Mark your attendance directly, or scan the QR code.
                 </p>
+
+                {/* One-click portal check-in */}
+                <button
+                  onClick={markAttendanceSelf}
+                  disabled={selfCheckin || marking}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-sm font-semibold transition mb-3 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <span>✅</span> {selfCheckin ? "Marking..." : "Mark Attendance"}
+                </button>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex-1 h-px bg-blue-100" />
+                  <span className="text-xs text-slate-400">or scan QR code</span>
+                  <div className="flex-1 h-px bg-blue-100" />
+                </div>
 
                 {/* Camera scan button */}
                 <button

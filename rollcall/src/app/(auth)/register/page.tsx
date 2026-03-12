@@ -35,7 +35,7 @@ export default function RegisterPage() {
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
           <div className="flex items-center gap-3 mb-8">
-            <Image src="/logo.png" alt="RollCall" width={40} height={40} />
+            <Image src="/logo.svg" alt="RollCall" width={40} height={40} />
             <div>
               <h1 className="text-xl font-bold text-slate-900">Create account</h1>
               <p className="text-xs text-slate-400">Join RollCall today</p>
@@ -47,7 +47,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
               <input
                 type="text" name="name" value={form.name} onChange={handleChange} required
-                className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                 placeholder="John Doe"
               />
             </div>
@@ -56,7 +56,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
               <input
                 type="email" name="email" value={form.email} onChange={handleChange} required
-                className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                 placeholder="you@university.edu"
               />
             </div>
@@ -65,7 +65,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
               <input
                 type="password" name="password" value={form.password} onChange={handleChange} required minLength={8}
-                className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                 placeholder="Minimum 8 characters"
               />
             </div>
@@ -94,7 +94,7 @@ export default function RegisterPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Student ID</label>
                 <input
                   type="text" name="studentId" value={form.studentId} onChange={handleChange} required
-                  className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                   placeholder="e.g. STU2024001"
                 />
               </div>

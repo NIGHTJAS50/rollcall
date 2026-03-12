@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="48" height="48" rx="12" fill="url(#bg)"/>
+
+  <!-- Clipboard body -->
+  <rect x="11" y="12" width="26" height="28" rx="3" fill="white" opacity="0.95"/>
+
+  <!-- Clip at top -->
+  <rect x="18" y="9" width="12" height="7" rx="3.5" fill="#1d4ed8"/>
+  <rect x="21" y="8" width="6" height="4" rx="2" fill="white"/>
+
+  <!-- Row 1: checkmark + line -->
+  <polyline points="15,22 18,25 23,19" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="26" y1="22" x2="33" y2="22" stroke="#bfdbfe" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- Row 2: checkmark + line -->
+  <polyline points="15,30 18,33 23,27" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="26" y1="30" x2="33" y2="30" stroke="#bfdbfe" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- Row 3: empty circle + line -->
+  <circle cx="18" cy="37" r="2" fill="#e0f2fe"/>
+  <line x1="23" y1="37" x2="33" y2="37" stroke="#e0f2fe" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

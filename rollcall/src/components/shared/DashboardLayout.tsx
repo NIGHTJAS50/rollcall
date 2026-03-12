@@ -3,7 +3,7 @@
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface NavLink { label: string; href: string; icon: string; }
 
@@ -32,8 +32,13 @@ const roleBadgeColor: Record<string, string> = {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
   const role = session?.user?.role ?? "";
   const links = roleLinks[role] ?? [];
+
+  function handleSwitchAccount() {
+    router.push("/login?switch=true");
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -42,7 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Logo */}
         <div className="px-6 py-5 border-b border-slate-100">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="RollCall" width={36} height={36} className="rounded-lg" />
+            <Image src="/logo.svg" alt="RollCall" width={36} height={36} className="rounded-lg" />
             <span className="text-xl font-bold text-slate-800">RollCall</span>
           </Link>
         </div>
@@ -82,6 +87,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </span>
               </div>
             </div>
+            <button
+              onClick={handleSwitchAccount}
+              className="w-full text-sm text-slate-500 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition text-left font-medium mb-1"
+            >
+              ⇄ Switch Account
+            </button>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
               className="w-full text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition text-left font-medium"
