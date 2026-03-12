@@ -3,6 +3,7 @@ import type { Role } from "@prisma/client";
 
 // Edge-safe auth config — no Prisma/bcrypt imports
 export const authConfig: NextAuthConfig = {
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   providers: [], // providers added in auth.ts (Node.js only)
   pages: {
     signIn: "/login",
