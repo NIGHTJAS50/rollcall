@@ -15,6 +15,7 @@ export default function LecturerCoursePage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState(false);
+  const [sessionError, setSessionError] = useState("");
 
   useEffect(() => {
     fetch(`/api/courses/${id}`).then((r) => r.json()).then((d) => { setCourse(d); setLoading(false); });
@@ -22,9 +23,11 @@ export default function LecturerCoursePage() {
 
   async function openSession() {
     setOpening(true);
+    setSessionError("");
     const res = await fetch("/api/sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ courseId: id }) });
     const data = await res.json();
     if (res.ok) router.push(`/lecturer/session/${data.id}`);
+    else setSessionError(data.error || `Error ${res.status}`);
     setOpening(false);
   }
 
@@ -51,6 +54,7 @@ export default function LecturerCoursePage() {
                 >
                   📊 View Report
                 </Link>
+                {sessionError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{sessionError}</p>}
                 {activeSession ? (
                   <Link href={`/lecturer/session/${activeSession.id}`}
                     className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition"
